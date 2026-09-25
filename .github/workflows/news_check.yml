@@ -16,9 +16,15 @@ on:
 permissions:
   contents: write   # lets the job push the updated news.db
 
+# With ~1,400 tickers a run takes ~30 min; never let two runs overlap.
+concurrency:
+  group: news-check
+  cancel-in-progress: false
+
 jobs:
   check-news:
     runs-on: ubuntu-latest
+    timeout-minutes: 55
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -46,4 +52,6 @@ jobs:
           git config user.email "news-bot@users.noreply.github.com"
           git add news.db
           git diff --cached --quiet || git commit -m "Update news DB [skip ci]"
+          # Pick up any commits pushed while this run was working.
+          git pull --rebase
           git push
