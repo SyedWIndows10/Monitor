@@ -1,0 +1,39 @@
+name: Stock News Monitor
+
+on:
+  schedule:
+    # Every 15 minutes, 13:00-21:00 UTC, Monday-Friday.
+    # Adjust for US market hours / daylight saving as needed (see README.md).
+    - cron: '*/15 13-21 * * 1-5'
+  workflow_dispatch: {}   # adds a manual "Run workflow" button
+
+jobs:
+  check-news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run news check
+        env:
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        run: python monitor.py
+
+      - name: Commit updated database
+        run: |
+          git config user.name "news-bot"
+          git config user.email "news-bot@users.noreply.github.com"
+          git add news.db
+          git diff --cached --quiet || git commit -m "Update news DB [skip ci]"
+          git push

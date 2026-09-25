@@ -1,0 +1,20 @@
+# Source names must match Finnhub's "source" field (case-insensitive match
+# is handled in monitor.py). Check a few days of raw news output to confirm
+# the exact strings Finnhub returns for the outlets you care about, since
+# formatting can vary (e.g. "Reuters" vs "reuters.com").
+
+tier1:   # weight 1.0
+  - Reuters
+  - Bloomberg
+  - WSJ
+  - Financial Times
+  - AP
+
+tier2:   # weight 0.7
+  - CNBC
+  - MarketWatch
+  - Barron's
+  - Yahoo
+
+blocked:
+  []
