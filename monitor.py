@@ -297,4 +297,8 @@ def run_cycle():
 
 
 if __name__ == "__main__":
-    run_cycle()
+    if os.environ.get("TEST_EMAIL") == "true":
+        send_email("Stock monitor: test email", "Email delivery is working.")
+        print("Test email sent.")
+    else:
+        run_cycle()

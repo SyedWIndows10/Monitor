@@ -5,7 +5,12 @@ on:
     # Every 15 minutes, 13:00-21:00 UTC, Monday-Friday.
     # Adjust for US market hours / daylight saving as needed (see README.md).
     - cron: '*/15 13-21 * * 1-5'
-  workflow_dispatch: {}   # adds a manual "Run workflow" button
+  workflow_dispatch:      # adds a manual "Run workflow" button
+    inputs:
+      test_email:
+        description: 'Only send a test email (skip the news check)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write   # lets the job push the updated news.db
@@ -31,6 +36,7 @@ jobs:
           EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
           EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          TEST_EMAIL: ${{ inputs.test_email }}
         run: python monitor.py
 
       - name: Commit updated database
