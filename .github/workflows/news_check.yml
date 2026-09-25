@@ -7,6 +7,9 @@ on:
     - cron: '*/15 13-21 * * 1-5'
   workflow_dispatch: {}   # adds a manual "Run workflow" button
 
+permissions:
+  contents: write   # lets the job push the updated news.db
+
 jobs:
   check-news:
     runs-on: ubuntu-latest
