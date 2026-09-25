@@ -235,6 +235,8 @@ def run_cycle():
             time.sleep(REQUEST_PAUSE_SECONDS)
             continue
 
+        quote = None  # fetched at most once per ticker, only when needed
+
         for item in items:
             source_name = (item.get("source") or "").strip().lower()
             if source_name in blocked or source_name not in weights:
@@ -256,11 +258,17 @@ def run_cycle():
             if in_cooldown(conn, symbol):
                 continue
 
-            try:
-                quote = client.quote(symbol)
-            except Exception as e:
-                print(f"[{symbol}] quote failed: {e}")
-                continue
+            if quote is None:
+                time.sleep(REQUEST_PAUSE_SECONDS)
+                try:
+                    quote = client.quote(symbol)
+                except Exception as e:
+                    print(f"[{symbol}] quote failed: {e}")
+                    # Un-mark this item so it is retried next cycle, and stop
+                    # hitting the API for this ticker.
+                    conn.execute("DELETE FROM news WHERE finnhub_id = ?", (item["id"],))
+                    conn.commit()
+                    break
 
             prev_close = quote.get("pc") or 0
             current = quote.get("c") or 0
