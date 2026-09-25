@@ -221,7 +221,10 @@ def run_cycle():
     conn = init_db()
     tickers = load_tickers()
 
+    # Look back to yesterday so runs just after midnight (e.g. the weekend run)
+    # still see the previous day's news; already_seen() prevents repeats.
     today = date.today().isoformat()
+    yesterday = (date.today() - timedelta(days=1)).isoformat()
 
     for row in tickers:
         symbol = row["symbol"].strip().upper()
@@ -229,7 +232,7 @@ def run_cycle():
         max_move_pct = float(row.get("max_move_pct", 5))
 
         try:
-            items = client.company_news(symbol, _from=today, to=today)
+            items = client.company_news(symbol, _from=yesterday, to=today)
         except Exception as e:
             print(f"[{symbol}] fetch failed: {e}")
             time.sleep(REQUEST_PAUSE_SECONDS)
